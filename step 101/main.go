@@ -19,6 +19,9 @@ type sprite struct {
 
 var player sprite
 var ghosts []*sprite
+var score int
+var dots int
+var lives = 1
 
 var maze []string
 
@@ -44,6 +47,8 @@ func loadMaze(file string) error {
 				player = sprite{row, col}
 			case 'G':
 				ghosts = append(ghosts, &sprite{row, col})
+			case '.':
+				dots++
 			}
 		}
 	}
@@ -55,7 +60,9 @@ func printScreen() {
 	for _, line := range maze {
 		for _, chr := range line {
 			switch chr {
-			case '#':
+			case '#': 
+				fallthrough
+			case '.':
 				fmt.Printf("%c", chr)
 			default:
 				fmt.Print(" ")
@@ -64,9 +71,11 @@ func printScreen() {
 		fmt.Println()
 	}
 
+	//move player
 	simpleansi.MoveCursor(player.row, player.col)
 	fmt.Print("P")
 
+	//move ghosts
 	for _, g := range ghosts {
 		simpleansi.MoveCursor(g.row, g.col)
 		fmt.Print("G")
@@ -74,6 +83,8 @@ func printScreen() {
 
 	// Move cursor outside of maze drawing area
 	simpleansi.MoveCursor(len(maze)+1, 0)
+	//print score
+	fmt.Println("Score:", score, "\tlives:", lives)
 
 }
 
@@ -177,6 +188,13 @@ func drawDirection() string {
 
 func movePlayer(dir string) {
 	player.row, player.col = makeMove(player.row, player.col, dir)
+    switch maze[player.row][player.col] {
+    case '.':
+        dots--
+        score++
+        // Remove dot from the maze
+        maze[player.row] = maze[player.row][0:player.col] + " " + maze[player.row][player.col+1:]
+    }
 }
 func moveGhosts() {
 	for _, g := range ghosts {
@@ -208,7 +226,7 @@ func main() {
 			// process movement
 			movePlayer(input)
 			//permanent break
-			if input == "ESC" {
+			if input == "ESC" || dots == 0 || lives <= 0{
 				stillOn = false
 				break
 			}
@@ -224,6 +242,13 @@ func main() {
 		}
 
 	}()
+	//process collisions
+	for _, g := range ghosts {
+		if player == *g {
+			lives = 0
+		}
+	}
+
 	//Game loop
 	for stillOn {
 		printScreen()
