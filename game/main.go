@@ -205,24 +205,12 @@ func makeMove(oldRow, oldCol int, dir string) (newRow, newCol int) {
 	return
 }
 
-//ghosts movement
-func drawDirection() string {
-	dir := rand.Intn(4)
-	move := map[int]string{
-		0: "UP",
-		1: "DOWN",
-		2: "RIGHT",
-		3: "LEFT",
-	}
-	return move[dir]
-}
-
+//player movement
 func movePlayer(dir string) {
 	player.row, player.col = makeMove(player.row, player.col, dir)
 
 	removeDot := func(row, col int) {
-		// Remove dot from the maze
-		maze[player.row] = maze[player.row][0:player.col] + " " + maze[player.row][player.col+1:]
+		maze[row] = maze[row][0:col] + " " + maze[row][col+1:]
 	}
 
 	switch maze[player.row][player.col] {
@@ -236,6 +224,19 @@ func movePlayer(dir string) {
 	}
 
 }
+
+//ghosts movement
+func drawDirection() string {
+	dir := rand.Intn(4)
+	move := map[int]string{
+		0: "UP",
+		1: "DOWN",
+		2: "RIGHT",
+		3: "LEFT",
+	}
+	return move[dir]
+}
+
 func moveGhosts() {
 	for _, g := range ghosts {
 		dir := drawDirection()
@@ -270,11 +271,31 @@ func main() {
 				break
 			}
 
+			//process collision
+			for _, g := range ghosts {
+				if player == *g {
+					lives = 0
+				}
+			}
+
 			// process movement
 			movePlayer(input)
 			//permanent break
-			if input == "ESC" || dots == 0 || lives <= 0 {
+			if input == "ESC" {
 				stillOn = false
+				break
+			}
+
+			//winning
+			if dots == 0 {
+				stillOn = false
+				println("You Win")
+				break
+			}
+
+			if lives <= 0 {
+				stillOn = false
+				println("You Loose")
 				break
 			}
 		}
