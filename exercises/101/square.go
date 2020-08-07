@@ -106,3 +106,6 @@ func main() {
 	// NoPipeline()
 	Pipeline()
 }
+
+
+// when can we use buffered channels ?
