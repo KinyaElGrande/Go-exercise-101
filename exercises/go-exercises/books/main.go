@@ -98,3 +98,28 @@ func getBooks(author string) chan *booklist.Book {
 
 	return foundBooks
 }
+
+//book files pipeline
+func bookFiles(foundBooks chan *booklist.Book) chan string {
+	booksfile := make(chan string)
+	detailService := bookdetails.NewService(dataDirectory)
+
+	go func() {
+		for x := range foundBooks {
+			bookfile, _ := detailService.Get(x.Filename)
+
+			defer bookfile.Close()
+
+			start := make([]byte, 257)
+			count, readErr := bookfile.Read(start)
+			if readErr != nil {
+				log.Fatalf("Error reading book: %s", readErr)
+			}
+
+			fmt.Printf("\nFirst %d bytes of book: %s\n", count, start)
+		}
+
+	}()
+
+	return booksfile
+}
