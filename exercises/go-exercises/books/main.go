@@ -163,10 +163,9 @@ func addWords(text string, wordMap map[string]int) {
 	// add all the words in `text` to `wordMap`
 	words := strings.Split(text, " ")
 
-	// remove punctuation
 	// lower-case
-	// 4 letters or longer
 
+	//removing punctuations
 	reg, err := regexp.Compile("[^a-zA-Z]+")
 	if err != nil {
 		log.Fatal(err)
@@ -174,11 +173,16 @@ func addWords(text string, wordMap map[string]int) {
 
 	for _, w := range words {
 		processedWord := reg.ReplaceAllString(w, "")
-		value, found := wordMap[processedWord]
-		if found {
-			wordMap[processedWord] = value + 1
-		} else {
-			wordMap[processedWord] = 1
+		//lower case
+		lowerCase := strings.ToLower(processedWord)
+		// 4 letters or longer
+		if len(lowerCase) >= 4 {
+			value, found := wordMap[lowerCase]
+			if found {
+				wordMap[lowerCase] = value + 1
+			} else {
+				wordMap[lowerCase] = 1
+			}
 		}
 	}
 }
