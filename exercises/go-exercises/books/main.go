@@ -24,7 +24,7 @@ func main() {
 
 	// Uncomment this to see the book functions in action.
 	// tryBookFunctions()
-	author := "William Shakespeare"
+	author := "Zora Neale Hurston"
 	overlappingWords(author)
 }
 
@@ -84,15 +84,22 @@ func overlappingWords(author string) {
 			// find words in common...
 			commonWords = findCommon(commonWords, b)
 		}
-
-		// fmt.Printf("%+v \n", b)
 	}
 
 	fmt.Printf("Common words: %v\n", commonWords)
 }
 
 func findCommon(start map[string]int, newWords map[string]int) map[string]int {
-	return nil
+	common := make(map[string]int)
+
+
+	// what items in start also exist in newWords?
+	for k, v := range start{
+		if item, found := newWords[k];found{
+			common[k] = v+item
+		}
+	}
+	return common
 }
 
 //pipeline for getting books
@@ -113,18 +120,6 @@ func getBooks(author string) chan *booklist.Book {
 
 	return foundBooks
 }
-
-/*
-book ---> "The cat in the hat came back. The cat ate food."
-our map...
-the: 2
-cat: 2
-in: 1
-came: 1
-back: 1
-ate: 1
-food: 1
-*/
 
 //bookFiles returns the words from the foundbooks
 func bookFiles(foundBooks chan *booklist.Book) chan map[string]int {
@@ -162,8 +157,6 @@ func booktoMap(book *booklist.Book, detailService *bookdetails.Service) map[stri
 func addWords(text string, wordMap map[string]int) {
 	// add all the words in `text` to `wordMap`
 	words := strings.Split(text, " ")
-
-	// lower-case
 
 	//removing punctuations
 	reg, err := regexp.Compile("[^a-zA-Z]+")
