@@ -22,9 +22,15 @@ func readLines(path string) ([]string, error) {
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "@") {
-			mails := strings.Trim(scanner.Text(), "<>;(),")
+			tmails := strings.Trim(scanner.Text(), ",")
+			mails := strings.Split(tmails, ",")
 			// tmails := trimQuote(mails)
-			lines = append(lines, mails)
+			for _, n := range mails {
+				if strings.Contains(n, "@") {
+					trimmed := trimQuote(n)
+					lines = append(lines, trimmed)
+				}
+			}
 		}
 	}
 	return lines, scanner.Err()
@@ -33,8 +39,8 @@ func readLines(path string) ([]string, error) {
 //trimming quotes
 func trimQuote(s string) string {
 	if len(s) >= 2 {
-		if c := s[len(s)-2]; s[0] == c && (c == '"' || c == '\'') {
-			return s[1 : len(s)-2]
+		if c := s[len(s)-1]; s[0] == c && (c == '"' || c == '\'') {
+			return s[1 : len(s)-1]
 		}
 	}
 	return s
@@ -64,7 +70,7 @@ func main() {
 		fmt.Println(i, line)
 	}
 
-	if err := writeLines(lines, "live_mails.csv"); err != nil {
+	if err := writeLines(lines, "out.csv"); err != nil {
 		log.Fatalf("writeLines: %s", err)
 	}
 }
