@@ -46,6 +46,19 @@ func trimQuote(s string) string {
 	return s
 }
 
+// for removing duplicate emails
+func unique(line []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range line {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
 // writeLines writes the lines to the given file.
 func writeLines(lines []string, path string) error {
 	file, err := os.Create(path)
