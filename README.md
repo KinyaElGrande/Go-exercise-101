@@ -4,5 +4,5 @@ Elgrande Golang exercises 🤓
 ## <------------ELGRANDE SERIES ------>
 
 ```
-hehe update coming soon
+hehe update on ReadME coming soon
 ```
