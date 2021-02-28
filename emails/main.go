@@ -75,7 +75,7 @@ func writeLines(lines []string, path string) error {
 }
 
 func main() {
-	lines, err := readLines("live.txt")
+	lines, err := readLines("emails.txt")
 	if err != nil {
 		log.Fatalf("readLines: %s", err)
 	}
