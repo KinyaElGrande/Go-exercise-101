@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
+	"regexp"
 )
 
 func main() {
@@ -32,4 +34,32 @@ func main() {
 	default:
 		fmt.Printf("Unknown command:- %s\n", cmd)
 	}
+}
+
+func parseURL(linkToGet *url.URL, content string) ([]string, error){
+	var(
+		err error
+		links []string 
+		matches [][]string
+		findLinks = regexp.MustCompile("<a.*?href=\"(.*?)\"")
+	)
+
+	links = make([]string, 0)
+	matches = findLinks.FindAllStringSubmatch(content, -1)
+
+	for _, val := range matches {
+		var linkURL *url.URL
+
+		if linkURL, err = url.Parse(val[1]); err != nil {
+			return links, err
+		}
+
+		if linkURL.IsAbs() {
+			links = append(links, linkURL.String())
+		} else {
+			links = append(links, linkToGet.Scheme+"://"+linkToGet.Host+linkURL.String())
+		}
+	}
+
+	return links, err
 }
