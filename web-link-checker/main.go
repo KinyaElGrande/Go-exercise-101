@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
@@ -36,11 +38,11 @@ func main() {
 	}
 }
 
-func parseURL(linkToGet *url.URL, content string) ([]string, error){
-	var(
-		err error
-		links []string 
-		matches [][]string
+func parseURL(linkToGet *url.URL, content string) ([]string, error) {
+	var (
+		err       error
+		links     []string
+		matches   [][]string
 		findLinks = regexp.MustCompile("<a.*?href=\"(.*?)\"")
 	)
 
@@ -62,4 +64,27 @@ func parseURL(linkToGet *url.URL, content string) ([]string, error){
 	}
 
 	return links, err
+}
+
+func getURLContent(linkToGet string) (string, error) {
+	var (
+		err     error
+		content []byte
+		resp    *http.Response
+	)
+
+	if resp, err = http.Get(linkToGet); err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", err
+	}
+
+	if content, err = ioutil.ReadAll(resp.Body); err != nil {
+		return "", err
+	}
+
+	return string(content), err
 }
