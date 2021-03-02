@@ -3,11 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
+
+	"github.com/KinyaElGrande/Go-exercise-101/flags/samples"
 )
 
 func main() {
@@ -24,8 +27,29 @@ func main() {
 		msgFlag := getURLCmd.String("url", "Pass in the url after get command", "pass in the get --url example.com")
 		getURLCmd.Parse(os.Args[2:])
 
+
 		if msgFlag != nil && *msgFlag != "" {
 			fmt.Printf("Processing :%s Url", *msgFlag)
+
+			content , contentErr := getURLContent(*msgFlag)
+			if contentErr != nil {
+				panic("Oops! Content got blew up: " + contentErr.Error())
+			}
+
+			//Clean up HTML Entities
+			content = html.UnescapeString(content)
+
+			var urlToGet *url.URL
+			
+			parsedURL, parsedURLError := parseURL(urlToGet, content)
+			if parsedURLError != nil {
+				panic("Oops! Content got blew up: " + parsedURLError.Error())
+			}
+
+			for _ , value := range parsedURL {
+				samples.Colorize(samples.ColorGreen, value)
+			}
+
 		} else {
 			fmt.Printf("Usage : %s", *msgFlag)
 		}
@@ -66,6 +90,7 @@ func parseURL(linkToGet *url.URL, content string) ([]string, error) {
 	return links, err
 }
 
+//getURLContent function gets the content of a webpage
 func getURLContent(linkToGet string) (string, error) {
 	var (
 		err     error
