@@ -39,9 +39,12 @@ func main() {
 			//Clean up HTML Entities
 			content = html.UnescapeString(content)
 
-			var urlToGet *url.URL
+			cmdURL, cmdURLerr := url.Parse(*msgFlag)
+			if cmdURLerr != nil {
+				return
+			}
 
-			parsedURL, parsedURLError := parseURL(urlToGet, content)
+			parsedURL, parsedURLError := parseURL(cmdURL, content)
 			if parsedURLError != nil {
 				panic("Oops! Content got blew up: " + parsedURLError.Error())
 			}
