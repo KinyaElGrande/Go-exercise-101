@@ -27,26 +27,26 @@ func main() {
 		msgFlag := getURLCmd.String("url", "Pass in the url after get command", "pass in the get --url example.com")
 		getURLCmd.Parse(os.Args[2:])
 
-
 		if msgFlag != nil && *msgFlag != "" {
-			fmt.Printf("Processing :%s Url", *msgFlag)
+			fmt.Print("Processing : ")
+			samples.Colorize(samples.ColorBlue, *msgFlag)
 
-			content , contentErr := getURLContent(*msgFlag)
+			content, contentErr := getURLContent(*msgFlag)
 			if contentErr != nil {
-				panic("Oops! Content got blew up: " + contentErr.Error())
+				panic("Oops! Content blew up: " + contentErr.Error())
 			}
 
 			//Clean up HTML Entities
 			content = html.UnescapeString(content)
 
 			var urlToGet *url.URL
-			
+
 			parsedURL, parsedURLError := parseURL(urlToGet, content)
 			if parsedURLError != nil {
 				panic("Oops! Content got blew up: " + parsedURLError.Error())
 			}
 
-			for _ , value := range parsedURL {
+			for _, value := range parsedURL {
 				samples.Colorize(samples.ColorGreen, value)
 			}
 
@@ -58,7 +58,8 @@ func main() {
 		fmt.Println("Help messages ...")
 
 	default:
-		fmt.Printf("Unknown command:- %s\n", cmd)
+		fmt.Print("Unknown command : ")
+		samples.Colorize(samples.ColorRed, cmd)
 	}
 }
 
@@ -95,12 +96,16 @@ func getURLContent(linkToGet string) (string, error) {
 	var (
 		err     error
 		content []byte
-		resp    *http.Response
 	)
 
-	if resp, err = http.Get(linkToGet); err != nil {
-		return "", err
-	}
+	resp, err := http.Get(linkToGet)
+	defer func() {
+		if resp == nil || resp.Body == nil {
+			return
+		}
+		resp.Body.Close()
+	}()
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
