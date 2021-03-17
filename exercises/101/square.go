@@ -11,7 +11,7 @@ var randomizer = rand.New(rand.NewSource(time.Now().Unix()))
 
 const (
 	minWait   time.Duration = time.Millisecond * 1
-	maxWait   time.Duration = time.Millisecond * 500
+	maxWait                 = time.Millisecond * 500
 	minResult               = 1
 	maxResult               = 1000
 )
@@ -78,11 +78,11 @@ func Square(numbers chan int) chan SquareResult {
 			wg.Done()
 		}()
 	}
-	go func () {
+	go func() {
 		wg.Wait()
 		close(squares)
 	}()
-	
+
 	return squares
 }
 
@@ -103,9 +103,8 @@ func Pipeline() {
 }
 
 func main() {
-	// NoPipeline()
-	Pipeline()
+	NoPipeline()
+	// Pipeline()
 }
-
 
 // when can we use buffered channels ?
