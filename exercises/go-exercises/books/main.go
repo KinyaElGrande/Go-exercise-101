@@ -92,11 +92,10 @@ func overlappingWords(author string) {
 func findCommon(start map[string]int, newWords map[string]int) map[string]int {
 	common := make(map[string]int)
 
-
 	// what items in start also exist in newWords?
-	for k, v := range start{
-		if item, found := newWords[k];found{
-			common[k] = v+item
+	for k, v := range start {
+		if item, found := newWords[k]; found {
+			common[k] = v + item
 		}
 	}
 	return common
