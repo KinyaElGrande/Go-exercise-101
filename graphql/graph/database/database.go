@@ -3,79 +3,38 @@ package database
 import (
 	"context"
 	"log"
-	"time"
 
-	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/model"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type DB struct {
-	client *mongo.Client
-}
-
-func Connect() *DB {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+//MongoConnection connects to MongoDB client
+func MongoConnection() *mongo.Client {
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &DB{
-		client: client,
-	}
-
-}
-
-func (db *DB) Save(input *model.NewDog) *model.Dog {
-	collection := db.client.Database("animals").Collection("dogs")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	res, err := collection.InsertOne(ctx, input)
+	err = client.Connect(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &model.Dog{
-		ID:        res.InsertedID.(primitive.ObjectID).Hex(),
-		Name:      input.Name,
-		IsGoodBoy: input.IsGoodBoy,
+
+	connectionErr := client.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		log.Fatal("Couldn't connect to the database", connectionErr)
+	} else {
+		log.Println("Connected to MongoDB 🚀!")
 	}
+	return client
 }
 
-func (db *DB) FindByID(ID string) *model.Dog {
-	objectId, err := primitive.ObjectIDFromHex(ID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	collection := db.client.Database("animals").Collection("dogs")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	res := collection.FindOne(ctx, bson.M{"_id": objectId})
-	dog := model.Dog{}
-	res.Decode(&dog)
-	return &dog
-}
+var Client *mongo.Client = MongoConnection()
 
-func (db *DB) AllDogs() []*model.Dog {
-	collection := db.client.Database("animals").Collection("dogs")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	cur, err := collection.Find(ctx, bson.D{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	var dogs []*model.Dog
+//OpenCollection make a connection with a database collection
+func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collection {
+	var collection *mongo.Collection = client.Database("animals").Collection(collectionName)
 
-	for cur.Next(ctx) {
-		var dog *model.Dog
-		err := cur.Decode(&dog)
-		if err != nil {
-			log.Fatal(err)
-		}
-		dogs = append(dogs, dog)
-	}
-
-	return dogs
+	return collection
 }

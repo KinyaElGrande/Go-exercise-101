@@ -2,6 +2,12 @@ type Dog  {
   _id: String!
   name: String!
   isGoodBoy: Boolean!
+  user: User!
+}
+
+type User {
+  _id: ID!
+  name: String!
 }
 
 type Query {
@@ -14,6 +20,23 @@ input NewDog {
   isGoodBoy: Boolean!
 }
 
+input NewUser {
+  username: String!
+  password: String!
+}
+
+input Login {
+  username: String!
+  password: String!
+}
+
+input RefreshToken {
+  token: String!
+}
+
 type Mutation {
   createDog(input: NewDog): Dog!
+  createUser(input: NewUser): String!
+  login(input: Login!): String!
+  refreshToken(input: RefreshToken): String!
 }
