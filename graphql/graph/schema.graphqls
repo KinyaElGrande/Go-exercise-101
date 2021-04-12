@@ -7,7 +7,8 @@ type Dog  {
 
 type User {
   _id: ID!
-  name: String!
+  username: String!
+  password: String!
 }
 
 type Query {
