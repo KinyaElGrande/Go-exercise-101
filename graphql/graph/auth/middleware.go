@@ -6,7 +6,7 @@ import (
 
 	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/jwt"
 	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/model"
-	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/repository"
+	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/repository/userRepository"
 )
 
 type contextKey struct {
@@ -33,7 +33,7 @@ func Middleware() func(http.Handler) http.Handler {
 			}
 
 			user := model.User{Username: username}
-			id, err := repository.GetUserIdByUsername(username)
+			id, err := userRepository.GetUserIdByUsername(username)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return

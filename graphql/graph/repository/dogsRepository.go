@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/auth"
 	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/database"
 	"github.com/KinyaElGrande/Go-exercise-101/graphql/graph/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +16,13 @@ import (
 
 var dogsCollection *mongo.Collection = database.OpenCollection(database.Client, "dogs")
 
-func Save(input *model.NewDog) *model.Dog {
+func Save(ctx context.Context, input *model.NewDog) *model.Dog {
+	user := auth.ForContext(ctx)
+	if user == nil {
+		fmt.Errorf("access denied")
+		return &model.Dog{}
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	res, err := dogsCollection.InsertOne(ctx, input)
@@ -25,6 +33,10 @@ func Save(input *model.NewDog) *model.Dog {
 		ID:        res.InsertedID.(primitive.ObjectID).Hex(),
 		Name:      input.Name,
 		IsGoodBoy: input.IsGoodBoy,
+		User: &model.User{
+			ID: user.ID,
+			Username: user.Username,
+		},
 	}
 }
 

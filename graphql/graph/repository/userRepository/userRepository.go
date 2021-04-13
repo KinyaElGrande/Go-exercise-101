@@ -1,7 +1,8 @@
-package repository
+package userRepository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -22,9 +23,17 @@ func HashPassword(password string) (string, error) {
 }
 
 //VerifyPassword compares the hashed password with the passed in password
-func VerifyPassword(password, hash string) bool {
+func VerifyPassword(password, hash string) (bool, string) {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	check := true
+	msg := ""
+
+	if err != nil {
+		msg = "Your Password is incorrect"
+		check = false
+	}
+
+	return check, msg
 }
 
 //RegisterUser creates new users in the database
@@ -53,7 +62,7 @@ func RegisterUser(input *model.NewUser) string {
 
 func GetUserIdByUsername(username string) (string, error) {
 	var user model.User
-	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 
 	documentReturned := usersCollections.FindOne(ctx, bson.M{"username": &username})
 	defer cancel()
@@ -61,4 +70,31 @@ func GetUserIdByUsername(username string) (string, error) {
 	documentReturned.Decode(&user)
 
 	return user.ID, nil
+}
+
+func Login(input model.Login) string {
+	var foundUser model.User
+
+	var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+
+	err := usersCollections.FindOne(ctx, bson.M{"username": input.Username}).Decode(&foundUser)
+	defer cancel()
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+
+	validPassword, msg := VerifyPassword(input.Password, foundUser.Password)
+	defer cancel()
+	if !validPassword {
+		fmt.Println(msg)
+		return ""
+	}
+
+	token, err := jwt.GenerateToken(input.Username)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return token
 }
